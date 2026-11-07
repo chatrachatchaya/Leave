@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ระบบแจ้งลา R.24</title>
+  <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script>
+    /* =====================================================
+     *  ตั้งค่า: วาง URL ของ Web App (ลงท้าย /exec) ของระบบลา
+     * ===================================================== */
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwq0bI2E2QAXoN6-6K_Pi6G0BL8GPi4hR2TM9_3SHVGGfDHaoewiu9VGtDdFXLq3_QI/exec';
+    const FOOTER_TEXT = '© 2025 Chatrachatchaya, Ch. Ph.D. · Applied Chemistry · RMUTI';
+  </script>
+  <style>
+    :root {
+      --bg: #f4f2fb; --surface: #ffffff; --surface2: #f7f6fc; --border: #e2def0;
+      --accent: #5b4fa8; --accent-dark: #4a3f8f; --tint: #ece9f8; --tint2: #dcd6f3;
+      --ok: #2f8a5f; --ok-bg: #e5f4ec; --wait: #b4452f; --wait-bg: #fcebe6;
+      --warn: #8a6a12; --warn-bg: #fdf5dc;
+      --text: #2a2547; --muted: #706b8a; --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); color: var(--text); font-family: 'Anuphan', 'Inter', system-ui, sans-serif; font-size: 15px; line-height: 1.6; }
+    .page { max-width: 640px; margin: 0 auto; padding: 24px 16px 56px; }
+
+    .app-header { display: flex; align-items: center; gap: 14px; padding: 4px 0 22px; border-bottom: 1px solid var(--border); margin-bottom: 22px; }
+    .app-header .icon { width: 46px; height: 46px; border-radius: 12px; background: var(--tint); color: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .app-header h1 { font-size: 21px; font-weight: 700; color: var(--accent); line-height: 1.3; }
+    .app-header p { font-size: 13px; color: var(--muted); }
+
+    .tabs { display: flex; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 5px; margin-bottom: 16px; }
+    .tab { flex: 1; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--muted); padding: 10px 6px; border-radius: 9px; cursor: pointer; }
+    .tab.active { background: var(--accent); color: #fff; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-bottom: 16px; }
+    .card-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .card-title::before { content: ''; width: 4px; height: 16px; background: var(--accent); border-radius: 2px; }
+    .card-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+    .section { display: none; }
+    .section.active { display: block; }
+
+    label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin: 14px 0 6px; }
+    label:first-child { margin-top: 0; }
+    input:not([type=radio]):not([type=checkbox]), select { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--surface2); font-family: inherit; font-size: 16px; color: var(--text); outline: none; -webkit-appearance: none; appearance: none; }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23706b8a' stroke-width='1.6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+    input:focus, select:focus { border-color: var(--accent); background-color: #fff; box-shadow: 0 0 0 3px var(--tint); }
+    input[type=file] { background: #fff; padding: 10px; font-size: 14px; }
+    .row { display: flex; gap: 10px; }
+    .row > * { flex: 1; min-width: 0; }
+    .row label { margin-top: 14px; }
+    #evList > label:first-child, #evUpload > label:first-child { margin-top: 18px; }
+    .hint { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+    .divider { border: 0; border-top: 1px dashed var(--border); margin: 20px 0 6px; }
+
+    .seg { display: flex; gap: 8px; }
+    .seg label { flex: 1; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--surface2); color: var(--text); font-size: 15px; font-weight: 500; cursor: pointer; }
+    .seg input { width: 18px; height: 18px; accent-color: var(--accent); }
+    .seg label:has(input:checked) { border-color: var(--accent); background: var(--tint); color: var(--accent-dark); }
+
+    .btn { width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 18px; border: 0; border-radius: 10px; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; background: var(--accent); color: #fff; margin-top: 20px; }
+    .btn:hover { background: var(--accent-dark); }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-soft { background: var(--tint); color: var(--accent-dark); border: 1.5px solid var(--tint2); }
+    .btn-soft:hover { background: var(--tint2); }
+    .search { display: flex; gap: 8px; }
+    .search .btn { width: auto; margin-top: 0; flex-shrink: 0; padding: 0 18px; }
+
+    .alert { padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 500; margin-top: 16px; }
+    .alert-ok { background: var(--ok-bg); color: var(--ok); border: 1px solid #c3e3d1; }
+    .alert-err { background: var(--wait-bg); color: var(--wait); border: 1px solid #f2cbc1; }
+    .alert-info { background: var(--tint); color: var(--accent-dark); border: 1px solid var(--tint2); }
+    .alert-warn { background: var(--warn-bg); color: var(--warn); border: 1px solid #efdfa8; }
+
+    .item { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-top: 10px; background: var(--surface2); }
+    .item-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+    .item-course { font-weight: 600; }
+    .item-meta { font-size: 13px; color: var(--muted); }
+    .pill { display: inline-flex; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+    .pill-ok { background: var(--ok-bg); color: var(--ok); }
+    .pill-wait { background: var(--wait-bg); color: var(--wait); }
+    .pick { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+    .pick input { width: 18px; height: 18px; flex-shrink: 0; margin-top: 3px; accent-color: var(--accent); }
+    .item:has(input:checked) { border-color: var(--accent); background: var(--tint); }
+
+    .footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 36px; padding-top: 18px; border-top: 1px solid var(--border); }
+    @media (max-width: 420px) { .card { padding: 18px; } .tab { font-size: 13px; } }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="app-header">
+    <div class="icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/><path d="M12 13v5M9.5 15.5h5"/></svg>
+    </div>
+    <div>
+      <h1>ระบบแจ้งลาป่วย / ลากิจ</h1>
+      <p id="teacher">แบบฟอร์ม R.24</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="new">แจ้งลา</button>
+    <button class="tab" data-tab="evidence">ส่งหลักฐาน</button>
+    <button class="tab" data-tab="history">เช็คสถานะ</button>
+  </div>
+
+  <!-- แจ้งลา -->
+  <div class="section active" id="tab-new">
+    <form class="card" id="newForm" autocomplete="off">
+      <div class="card-title">แจ้งลา</div>
+      <div class="card-sub">กรอกข้อมูลให้ครบ แนบใบ R.24 หรือใบรับรองแพทย์ ถ้ายังไม่มีส่งย้อนหลังได้</div>
+
+      <label for="course">รายวิชา</label>
+      <select id="course" required><option value="">— เลือกรายวิชา —</option></select>
+      <label for="section">กลุ่มเรียน / สาขา</label>
+      <select id="section" required><option value="">— เลือกกลุ่มเรียน —</option></select>
+
+      <hr class="divider">
+      <label for="sid">รหัสนักศึกษา</label>
+      <input id="sid" inputmode="numeric" placeholder="เช่น 68172350013-6" required>
+      <label for="sname">ชื่อ-นามสกุล</label>
+      <input id="sname" placeholder="เช่น นางสาว สมใจ ใจดี" required>
+
+      <label>ประเภทการลา</label>
+      <div class="seg">
+        <label><input type="radio" name="ltype" value="ลาป่วย" checked> 🤒 ลาป่วย</label>
+        <label><input type="radio" name="ltype" value="ลากิจ"> 📋 ลากิจ</label>
+      </div>
+      <label for="reason">สาเหตุ</label>
+      <input id="reason" placeholder="ระบุสาเหตุโดยย่อ" required>
+      <div class="row">
+        <div><label for="start">ลาตั้งแต่</label><input type="date" id="start" required></div>
+        <div><label for="end">ถึง</label><input type="date" id="end" required></div>
+      </div>
+
+      <label for="file1">แนบหลักฐาน (รูปภาพหรือ PDF)</label>
+      <input type="file" id="file1" accept="image/*,application/pdf">
+      <div class="hint">ไม่บังคับ — ถ้ายังไม่มีหลักฐาน เว้นไว้แล้วส่งย้อนหลังในแท็บ "ส่งหลักฐาน" ได้</div>
+
+      <button class="btn" type="submit" id="btnNew">บันทึกการลา</button>
+      <div id="newMsg"></div>
+    </form>
+  </div>
+
+  <!-- ส่งหลักฐานย้อนหลัง -->
+  <div class="section" id="tab-evidence">
+    <div class="card">
+      <div class="card-title">ส่งหลักฐานย้อนหลัง</div>
+      <div class="card-sub">กรอกรหัสนักศึกษาเพื่อค้นหาใบลาที่ยังไม่มีหลักฐาน</div>
+      <div class="search">
+        <input id="evSid" inputmode="numeric" placeholder="รหัสนักศึกษา">
+        <button class="btn btn-soft" id="btnFind" type="button">ค้นหา</button>
+      </div>
+      <div id="evList"></div>
+      <div id="evUpload" style="display:none">
+        <label for="file2">อัปโหลดหลักฐาน (รูปภาพหรือ PDF)</label>
+        <input type="file" id="file2" accept="image/*,application/pdf">
+        <button class="btn" id="btnEv" type="button">ส่งหลักฐาน</button>
+      </div>
+      <div id="evMsg"></div>
+    </div>
+  </div>
+
+  <!-- เช็คสถานะ -->
+  <div class="section" id="tab-history">
+    <div class="card">
+      <div class="card-title">เช็คสถานะการลา</div>
+      <div class="card-sub">ดูรายการลาทั้งหมดของตัวเอง และสถานะหลักฐาน</div>
+      <div class="search">
+        <input id="hSid" inputmode="numeric" placeholder="รหัสนักศึกษา">
+        <button class="btn btn-soft" id="btnHist" type="button">ดูข้อมูล</button>
+      </div>
+      <div id="hList"></div>
+    </div>
+  </div>
+
+  <div class="footer" id="footer"></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let MAX_MB = 10;
+$('footer').textContent = FOOTER_TEXT;
+
+async function api(action, data = {}, retries = 2) {
+  for (let i = 0; ; i++) {
+    let text = '';
+    try {
+      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ action }, data)) });
+      text = await res.text();
+    } catch (e) {
+      if (!navigator.onLine) return { ok: false, message: 'ไม่มีอินเทอร์เน็ต กรุณาตรวจสอบการเชื่อมต่อ' };
+      if (i >= retries) return { ok: false, network: true, message: 'เชื่อมต่อระบบไม่สำเร็จ — ตรวจว่า Deploy แบบ Who has access: Anyone และ URL ลงท้าย /exec' };
+      await new Promise(r => setTimeout(r, 800 * 2 ** i));
+      continue;
+    }
+    let j;
+    try { j = JSON.parse(text); } catch (e) {
+      return { ok: false, message: /doPost/i.test(text) ? 'Apps Script ยังเป็นโค้ดเก่า — วาง Code.gs ใหม่ แล้ว Deploy เป็น New version'
+        : /sign ?in|accounts\.google/i.test(text) ? 'Apps Script ต้องล็อกอิน — ตั้ง Who has access เป็น Anyone'
+        : 'ระบบตอบกลับไม่ถูกต้อง — ตรวจว่า Deploy โค้ดใหม่แล้ว' };
+    }
+    if (j && j.busy && i < retries) { await new Promise(r => setTimeout(r, 1500 * 2 ** i)); continue; }
+    return j;
+  }
+}
+
+function msg(id, text, kind) { $(id).innerHTML = text ? `<div class="alert alert-${kind}">${esc(text)}</div>` : ''; }
+
+function readFile(input) {
+  const file = input.files && input.files[0];
+  if (!file) return Promise.resolve(null);
+  if (file.size > MAX_MB * 1024 * 1024) return Promise.reject(new Error(`ไฟล์ใหญ่เกิน ${MAX_MB} MB กรุณาถ่ายรูปใหม่หรือลดขนาดไฟล์`));
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve({ name: file.name, mimeType: file.type || 'application/octet-stream', base64: String(fr.result).split(',')[1] || '' });
+    fr.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ กรุณาเลือกไฟล์ใหม่'));
+    fr.readAsDataURL(file);
+  });
+}
+
+function busy(btn, on, label) {
+  btn.disabled = on;
+  if (on) { btn.dataset.label = btn.textContent; btn.textContent = label; }
+  else if (btn.dataset.label) btn.textContent = btn.dataset.label;
+}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === 'tab-' + t.dataset.tab));
+});
+
+/* ---------- init ---------- */
+(async () => {
+  if (API_URL.includes('วาง_DEPLOYMENT_ID')) return msg('newMsg', 'ยังไม่ได้ตั้งค่า API_URL ในไฟล์ index.html', 'err');
+  const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  $('start').value = $('end').value = today;
+  const res = await api('init');
+  if (!res.ok) return msg('newMsg', res.message, 'err');
+  MAX_MB = res.maxFileMb || MAX_MB;
+  if (res.teacherName) $('teacher').textContent = 'อาจารย์ผู้สอน: ' + res.teacherName;
+  $('course').innerHTML += res.courses.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  $('section').innerHTML += res.sections.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+  try {   // จำรหัส/ชื่อ/กลุ่มไว้ในเครื่อง ครั้งหน้าไม่ต้องกรอกใหม่
+    const me = JSON.parse(localStorage.getItem('r24_me') || 'null');
+    if (me) { $('sid').value = me.sid || ''; $('sname').value = me.name || ''; $('evSid').value = $('hSid').value = me.sid || '';
+      if (res.sections.includes(me.section)) $('section').value = me.section; }
+  } catch (e) {}
+})();
+$('start').addEventListener('change', () => { if ($('end').value < $('start').value) $('end').value = $('start').value; });
+
+/* ---------- แจ้งลา ---------- */
+$('newForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  msg('newMsg', '', '');
+  if ($('end').value < $('start').value) return msg('newMsg', 'วันที่สิ้นสุดต้องไม่ก่อนวันเริ่มลา', 'err');
+  const btn = $('btnNew');
+  busy(btn, true, 'กำลังบันทึก…');
+  let res;
+  try {
+    const file = await readFile($('file1'));
+    if (file) btn.textContent = 'กำลังอัปโหลดหลักฐาน…';
+    res = await api('submit', {
+      course: $('course').value, section: $('section').value,
+      studentId: $('sid').value.trim(), studentName: $('sname').value.trim(),
+      leaveType: document.querySelector('input[name=ltype]:checked').value,
+      reason: $('reason').value.trim(), startDate: $('start').value, endDate: $('end').value, file,
+    }, 0);
+  } catch (err) { res = { ok: false, message: err.message }; }
+  busy(btn, false);
+  if (!res.ok) return msg('newMsg', res.message + (res.network ? ' — ก่อนส่งใหม่ ให้ดูในแท็บ "เช็คสถานะ" ก่อนว่าบันทึกแล้วหรือยัง' : ''), 'err');
+  try { localStorage.setItem('r24_me', JSON.stringify({ sid: $('sid').value.trim(), name: $('sname').value.trim(), section: $('section').value })); } catch (e) {}
+  msg('newMsg', res.message, res.complete ? 'ok' : 'warn');
+  $('reason').value = ''; $('file1').value = '';
+  $('evSid').value = $('hSid').value = $('sid').value.trim();
+});
+
+/* ---------- ส่งหลักฐานย้อนหลัง ---------- */
+let pending = [];
+$('btnFind').onclick = async () => {
+  const sid = $('evSid').value.trim();
+  msg('evMsg', '', ''); $('evUpload').style.display = 'none'; $('evList').innerHTML = '';
+  if (!sid) return msg('evMsg', 'กรุณากรอกรหัสนักศึกษา', 'err');
+  busy($('btnFind'), true, 'กำลังค้นหา…');
+  const res = await api('pending', { studentId: sid });
+  busy($('btnFind'), false);
+  if (!res.ok) return msg('evMsg', res.message, 'err');
+  pending = res.items;
+  if (!pending.length) return msg('evMsg', 'ไม่มีใบลาที่ค้างส่งหลักฐาน 🎉', 'ok');
+  $('evList').innerHTML = `<label>เลือกใบลาที่จะส่งหลักฐาน</label>` + pending.map((p, i) => `
+    <label class="item pick" style="margin:8px 0 0">
+      <input type="radio" name="pend" value="${p.row}" ${i === 0 ? 'checked' : ''}>
+      <span><span class="item-course">${esc(p.course)}</span><br>
+      <span class="item-meta">${esc(p.type)} · วันที่ ${esc(p.leaveDate)} · ${esc(p.reason)}</span></span>
+    </label>`).join('');
+  $('evUpload').style.display = '';
+};
+$('btnEv').onclick = async () => {
+  const sel = document.querySelector('input[name=pend]:checked');
+  msg('evMsg', '', '');
+  if (!sel) return msg('evMsg', 'กรุณาเลือกใบลา', 'err');
+  if (!$('file2').files.length) return msg('evMsg', 'กรุณาเลือกไฟล์หลักฐาน', 'err');
+  busy($('btnEv'), true, 'กำลังอัปโหลด…');
+  let res;
+  try {
+    const file = await readFile($('file2'));
+    res = await api('evidence', { studentId: $('evSid').value.trim(), row: Number(sel.value), file }, 0);
+  } catch (err) { res = { ok: false, message: err.message }; }
+  busy($('btnEv'), false);
+  if (!res.ok) return msg('evMsg', res.message, 'err');
+  $('file2').value = ''; $('evUpload').style.display = 'none'; $('evList').innerHTML = '';
+  msg('evMsg', res.message, 'ok');
+};
+
+/* ---------- เช็คสถานะ ---------- */
+$('btnHist').onclick = async () => {
+  const sid = $('hSid').value.trim();
+  $('hList').innerHTML = '';
+  if (!sid) return ($('hList').innerHTML = '<div class="alert alert-err">กรุณากรอกรหัสนักศึกษา</div>');
+  busy($('btnHist'), true, 'กำลังโหลด…');
+  const res = await api('history', { studentId: sid });
+  busy($('btnHist'), false);
+  if (!res.ok) return ($('hList').innerHTML = `<div class="alert alert-err">${esc(res.message)}</div>`);
+  if (!res.items.length) return ($('hList').innerHTML = '<div class="alert alert-info">ไม่พบประวัติการลาของรหัสนี้</div>');
+  const wait = res.items.filter(i => !i.complete).length;
+  $('hList').innerHTML = (wait ? `<div class="alert alert-warn">มีใบลา ${wait} รายการที่ยังไม่ส่งหลักฐาน</div>` : '') +
+    res.items.map(i => `
+      <div class="item">
+        <div class="item-top">
+          <div><div class="item-course">${esc(i.course)}</div>
+            <div class="item-meta">${esc(i.type)} · ${esc(i.start)}${i.end && i.end !== i.start ? ' – ' + esc(i.end) : ''} · ${esc(i.section)}</div></div>
+          <span class="pill ${i.complete ? 'pill-ok' : 'pill-wait'}">${i.complete ? 'มีหลักฐานแล้ว' : 'รอส่งหลักฐาน'}</span>
+        </div>
+        <div class="item-meta" style="margin-top:6px">บันทึกเมื่อ ${esc(i.submitted)}</div>
+      </div>`).join('');
+};
+</script>
+</body>
+</html>
