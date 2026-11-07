@@ -83,6 +83,38 @@
     .pick input { width: 18px; height: 18px; flex-shrink: 0; margin-top: 3px; accent-color: var(--accent); }
     .item:has(input:checked) { border-color: var(--accent); background: var(--tint); }
 
+    /* ---------- teacher ---------- */
+    body.teacher .page { max-width: 920px; }
+    body.teacher .tabs, body.teacher .section:not(#tab-teacher) { display: none !important; }
+    .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 4px 0 14px; }
+    .stat { background: var(--surface2); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; border: 1.5px solid transparent; }
+    .stat.on { border-color: var(--accent); background: var(--tint); }
+    .stat b { display: block; font-size: 22px; font-family: 'Inter', sans-serif; color: var(--accent); line-height: 1.2; }
+    .stat span { font-size: 12px; color: var(--muted); }
+    .filters { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+    .lv { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-top: 10px; background: #fff; }
+    .lv-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+    .lv-name { font-weight: 600; font-size: 16px; }
+    .lv-reason { margin-top: 8px; padding: 8px 12px; background: var(--surface2); border-radius: 8px; font-size: 14px; }
+    .lv-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+    .lv-actions input { flex: 1 1 200px; padding: 9px 12px; font-size: 14px; }
+    .sbtn { border: 1.5px solid var(--border); background: #fff; color: var(--text); font-family: inherit; font-size: 14px; font-weight: 600; padding: 8px 14px; border-radius: 9px; cursor: pointer; }
+    .sbtn:hover { background: var(--tint); }
+    .sbtn.ok { background: var(--ok); border-color: var(--ok); color: #fff; }
+    .sbtn.no { background: #fff; border-color: #efc2b7; color: var(--wait); }
+    .sbtn:disabled { opacity: .5; cursor: default; }
+    .pill-appr { background: var(--ok-bg); color: var(--ok); }
+    .pill-rej { background: var(--wait-bg); color: var(--wait); }
+    .pill-pend { background: var(--tint); color: var(--accent-dark); }
+    .pill-noev { background: var(--warn-bg); color: var(--warn); }
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(30, 25, 60, .6); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+    .modal-bg.open { display: flex; }
+    .modal { background: #fff; border-radius: 16px; width: min(820px, 100%); max-height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    .modal-body { overflow: auto; padding: 12px; text-align: center; background: var(--surface2); min-height: 200px; }
+    .modal-body img { max-width: 100%; height: auto; border-radius: 8px; }
+    .modal-body iframe { width: 100%; height: 70vh; border: 0; background: #fff; }
+    @media (max-width: 640px) { .stats { grid-template-columns: repeat(3, 1fr); } .filters { grid-template-columns: 1fr; } }
     .footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 36px; padding-top: 18px; border-top: 1px solid var(--border); }
     @media (max-width: 420px) { .card { padding: 18px; } .tab { font-size: 13px; } }
   </style>
@@ -175,7 +207,46 @@
     </div>
   </div>
 
+  <!-- หน้าอาจารย์ (?teacher) -->
+  <div class="section" id="tab-teacher">
+    <div class="card" id="tLogin" style="max-width:380px;margin:0 auto">
+      <div class="card-title">เข้าสู่ระบบอาจารย์</div>
+      <div class="card-sub">ตรวจใบลาและอนุมัติ</div>
+      <label for="tPin">PIN</label>
+      <input id="tPin" type="password" inputmode="numeric" autocomplete="current-password">
+      <button class="btn" id="btnTLogin" type="button">เข้าสู่ระบบ</button>
+      <div id="tLoginMsg"></div>
+    </div>
+    <div class="card" id="tDash" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <div class="card-title" style="margin:0">ใบลาทั้งหมด</div>
+        <button class="sbtn" id="btnTRefresh" type="button" style="font-size:13px">↻ รีเฟรช</button>
+      </div>
+      <div class="card-sub" id="tUpdated"></div>
+      <div class="stats" id="tStats"></div>
+      <div class="filters">
+        <select id="fCourse"><option value="">ทุกรายวิชา</option></select>
+        <select id="fSection"><option value="">ทุกกลุ่มเรียน</option></select>
+        <input id="fSearch" placeholder="ค้นหาชื่อ / รหัส">
+      </div>
+      <div id="tList"></div>
+    </div>
+  </div>
+
   <div class="footer" id="footer"></div>
+</div>
+
+<div class="modal-bg" id="evModal">
+  <div class="modal">
+    <div class="modal-head">
+      <b id="evTitle" style="font-size:15px">หลักฐาน</b>
+      <div style="display:flex;gap:8px">
+        <a class="sbtn" id="evOpen" target="_blank" style="text-decoration:none">เปิดแท็บใหม่</a>
+        <button class="sbtn" id="evClose" type="button">✕ ปิด</button>
+      </div>
+    </div>
+    <div class="modal-body" id="evBody"></div>
+  </div>
 </div>
 
 <script>
@@ -234,8 +305,10 @@ document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
 });
 
 /* ---------- init ---------- */
+const TEACHER_MODE = /[?&]teacher\b/.test(location.search) || location.hash === '#teacher';
 (async () => {
   if (API_URL.includes('วาง_DEPLOYMENT_ID')) return msg('newMsg', 'ยังไม่ได้ตั้งค่า API_URL ในไฟล์ index.html', 'err');
+  if (TEACHER_MODE) return setTimeout(teacherBoot, 0);   // รอให้สคริปต์โหลดครบก่อน
   const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   $('start').value = $('end').value = today;
   const res = await api('init');
@@ -332,11 +405,133 @@ $('btnHist').onclick = async () => {
         <div class="item-top">
           <div><div class="item-course">${esc(i.course)}</div>
             <div class="item-meta">${esc(i.type)} · ${esc(i.start)}${i.end && i.end !== i.start ? ' – ' + esc(i.end) : ''} · ${esc(i.section)}</div></div>
-          <span class="pill ${i.complete ? 'pill-ok' : 'pill-wait'}">${i.complete ? 'มีหลักฐานแล้ว' : 'รอส่งหลักฐาน'}</span>
+          <span style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+            <span class="pill ${i.complete ? 'pill-ok' : 'pill-wait'}">${i.complete ? 'มีหลักฐานแล้ว' : 'รอส่งหลักฐาน'}</span>
+            <span class="pill ${i.approval === 'อนุมัติ' ? 'pill-appr' : i.approval === 'ไม่อนุมัติ' ? 'pill-rej' : 'pill-pend'}">${i.approval === 'อนุมัติ' ? '✓ อาจารย์อนุมัติ' : i.approval === 'ไม่อนุมัติ' ? '✕ ไม่อนุมัติ' : 'รออาจารย์ตรวจ'}</span>
+          </span>
         </div>
+        ${i.teacherNote ? `<div class="lv-reason" style="margin-top:8px">💬 อาจารย์: ${esc(i.teacherNote)}</div>` : ''}
         <div class="item-meta" style="margin-top:6px">บันทึกเมื่อ ${esc(i.submitted)}</div>
       </div>`).join('');
 };
+
+/* ===================== หน้าอาจารย์ ===================== */
+const T = { pin: '', items: [], filter: 'รออนุมัติ' };
+
+function teacherBoot() {
+  document.body.classList.add('teacher');
+  document.title = 'ตรวจใบลา — อาจารย์';
+  $('tab-teacher').classList.add('active');
+  try { T.pin = sessionStorage.getItem('lv_pin') || ''; } catch (e) {}
+  if (T.pin) loadTeacher(); 
+  const go = async () => {
+    T.pin = $('tPin').value.trim();
+    if (!T.pin) return;
+    busy($('btnTLogin'), true, 'กำลังเข้าสู่ระบบ…');
+    await loadTeacher();
+    busy($('btnTLogin'), false);
+  };
+  $('btnTLogin').onclick = go;
+  $('tPin').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  $('btnTRefresh').onclick = loadTeacher;
+  ['fCourse', 'fSection'].forEach(id => $(id).addEventListener('change', renderTeacher));
+  $('fSearch').addEventListener('input', renderTeacher);
+  $('evClose').onclick = closeEvidence;
+  $('evModal').addEventListener('click', e => { if (e.target.id === 'evModal') closeEvidence(); });
+}
+
+async function loadTeacher() {
+  const res = await api('teacher.list', { pin: T.pin });
+  if (!res.ok) {
+    try { sessionStorage.removeItem('lv_pin'); } catch (e) {}
+    $('tDash').style.display = 'none'; $('tLogin').style.display = '';
+    return msg('tLoginMsg', res.message, 'err');
+  }
+  try { sessionStorage.setItem('lv_pin', T.pin); } catch (e) {}
+  T.items = res.items;
+  $('tLogin').style.display = 'none'; $('tDash').style.display = '';
+  const keep = (id, list, label) => { const v = $(id).value; $(id).innerHTML = `<option value="">${label}</option>` + list.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join(''); $(id).value = list.includes(v) ? v : ''; };
+  keep('fCourse', [...new Set(res.courses.concat(T.items.map(i => i.course)))], 'ทุกรายวิชา');
+  keep('fSection', [...new Set(res.sections.concat(T.items.map(i => i.section)))], 'ทุกกลุ่มเรียน');
+  $('tUpdated').textContent = 'อัปเดตล่าสุด ' + new Date().toLocaleTimeString('th-TH');
+  renderTeacher();
+}
+
+function renderTeacher() {
+  const c = $('fCourse').value, s = $('fSection').value, q = $('fSearch').value.trim().toLowerCase();
+  const base = T.items.filter(i => (!c || i.course === c) && (!s || i.section === s) &&
+    (!q || i.name.toLowerCase().includes(q) || i.studentId.replace(/\D/g, '').includes(q.replace(/\D/g, '') || '\u0000')));
+  const groups = [
+    ['รออนุมัติ', 'รออนุมัติ', i => i.approval === 'รออนุมัติ'],
+    ['ไม่มีหลักฐาน', 'ไม่มีหลักฐาน', i => !i.hasEvidence],
+    ['อนุมัติ', 'อนุมัติแล้ว', i => i.approval === 'อนุมัติ'],
+    ['ไม่อนุมัติ', 'ไม่อนุมัติ', i => i.approval === 'ไม่อนุมัติ'],
+    ['', 'ทั้งหมด', () => true],
+  ];
+  $('tStats').innerHTML = groups.map(([k, label, fn]) =>
+    `<div class="stat ${T.filter === k ? 'on' : ''}" data-f="${esc(k)}"><b>${base.filter(fn).length}</b><span>${label}</span></div>`).join('');
+  $('tStats').querySelectorAll('.stat').forEach(el => el.onclick = () => { T.filter = el.dataset.f; renderTeacher(); });
+  const fn = (groups.find(g => g[0] === T.filter) || groups[4])[2];
+  const list = base.filter(fn);
+  $('tList').innerHTML = list.length ? list.map(i => {
+    const pill = i.approval === 'อนุมัติ' ? 'pill-appr' : i.approval === 'ไม่อนุมัติ' ? 'pill-rej' : 'pill-pend';
+    return `<div class="lv" data-row="${i.row}">
+      <div class="lv-head">
+        <div>
+          <div class="lv-name">${esc(i.name)}</div>
+          <div class="item-meta">${esc(i.studentId)} · ${esc(i.section)} · ${esc(i.course)}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          <span class="pill ${i.hasEvidence ? 'pill-ok' : 'pill-noev'}">${i.hasEvidence ? 'มีหลักฐาน' : 'ยังไม่มีหลักฐาน'}</span>
+          <span class="pill ${pill}">${esc(i.approval)}</span>
+        </div>
+      </div>
+      <div class="item-meta" style="margin-top:6px">${i.type === 'ลากิจ' ? '📋' : '🤒'} <b style="color:var(--text)">${esc(i.type)}</b> · ${esc(i.start)}${i.end && i.end !== i.start ? ' – ' + esc(i.end) : ''} · ส่งเมื่อ ${esc(i.submitted)}</div>
+      <div class="lv-reason">${esc(i.reason)}</div>
+      ${i.decidedAt ? `<div class="item-meta" style="margin-top:6px">ตรวจเมื่อ ${esc(i.decidedAt)}${i.teacherNote ? ' · 💬 ' + esc(i.teacherNote) : ''}</div>` : ''}
+      <div class="lv-actions">
+        ${i.hasEvidence ? `<button class="sbtn" data-act="view" type="button">📄 ดูหลักฐาน</button>` : ''}
+        <input data-note placeholder="หมายเหตุถึงนักศึกษา (ไม่บังคับ)" value="${esc(i.teacherNote)}">
+        <button class="sbtn ok" data-act="อนุมัติ" type="button" ${i.approval === 'อนุมัติ' ? 'disabled' : ''}>✓ อนุมัติ</button>
+        <button class="sbtn no" data-act="ไม่อนุมัติ" type="button" ${i.approval === 'ไม่อนุมัติ' ? 'disabled' : ''}>✕ ไม่อนุมัติ</button>
+        ${i.approval !== 'รออนุมัติ' ? `<button class="sbtn" data-act="รออนุมัติ" type="button" title="ยกเลิกผลการตรวจ">↺</button>` : ''}
+      </div>
+    </div>`;
+  }).join('') : '<div class="alert alert-info">ไม่มีใบลาในหมวดนี้</div>';
+
+  $('tList').querySelectorAll('.lv').forEach(card => {
+    const item = T.items.find(x => x.row === Number(card.dataset.row));
+    card.querySelectorAll('[data-act]').forEach(b => b.onclick = async () => {
+      if (b.dataset.act === 'view') return openEvidence(item);
+      b.disabled = true;
+      const res = await api('teacher.decide', { pin: T.pin, row: item.row, studentId: item.studentId, decision: b.dataset.act, note: card.querySelector('[data-note]').value });
+      if (!res.ok) { b.disabled = false; alert(res.message); return; }
+      item.approval = res.approval; item.teacherNote = card.querySelector('[data-note]').value.trim();
+      item.decidedAt = res.approval === 'รออนุมัติ' ? '' : new Date().toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
+      renderTeacher();
+    });
+  });
+}
+
+let evUrl = null;
+async function openEvidence(item) {
+  $('evTitle').textContent = `${item.name} · ${item.start}`;
+  $('evBody').innerHTML = '<div class="muted" style="padding:40px">⏳ กำลังโหลดหลักฐาน…</div>';
+  $('evOpen').style.display = 'none';
+  $('evModal').classList.add('open');
+  const res = await api('teacher.file', { pin: T.pin, row: item.row });
+  if (!res.ok) return ($('evBody').innerHTML = `<div class="alert alert-err">${esc(res.message)}</div>`);
+  const bin = atob(res.base64), arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  if (evUrl) URL.revokeObjectURL(evUrl);
+  evUrl = URL.createObjectURL(new Blob([arr], { type: res.mimeType }));
+  $('evOpen').href = evUrl; $('evOpen').style.display = '';
+  $('evBody').innerHTML = /^image\//.test(res.mimeType)
+    ? `<img src="${evUrl}" alt="หลักฐาน">`
+    : res.mimeType === 'application/pdf' ? `<iframe src="${evUrl}"></iframe>`
+    : `<div class="alert alert-info">แสดงตัวอย่างไม่ได้ — กด "เปิดแท็บใหม่"</div>`;
+}
+function closeEvidence() { $('evModal').classList.remove('open'); $('evBody').innerHTML = ''; }
 </script>
 </body>
 </html>
