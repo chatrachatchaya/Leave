@@ -115,6 +115,8 @@
     .modal-body img { max-width: 100%; height: auto; border-radius: 8px; }
     .modal-body iframe { width: 100%; height: 70vh; border: 0; background: #fff; }
     @media (max-width: 640px) { .stats { grid-template-columns: repeat(3, 1fr); } .filters { grid-template-columns: 1fr; } }
+    .role-link { display: inline-block; margin-top: 10px; font-size: 12.5px; color: var(--muted); text-decoration: none; padding: 4px 12px; border: 1px solid var(--border); border-radius: 999px; }
+    .role-link:hover { color: var(--accent); border-color: var(--tint2); background: var(--tint); }
     .footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 36px; padding-top: 18px; border-top: 1px solid var(--border); }
     @media (max-width: 420px) { .card { padding: 18px; } .tab { font-size: 13px; } }
   </style>
@@ -233,7 +235,10 @@
     </div>
   </div>
 
-  <div class="footer" id="footer"></div>
+  <div class="footer">
+    <div id="footer"></div>
+    <a id="roleLink" class="role-link" href="?teacher">🔒 สำหรับอาจารย์</a>
+  </div>
 </div>
 
 <div class="modal-bg" id="evModal">
@@ -420,6 +425,8 @@ const T = { pin: '', items: [], filter: 'รออนุมัติ' };
 
 function teacherBoot() {
   document.body.classList.add('teacher');
+  $('roleLink').textContent = '← กลับหน้านักศึกษา';
+  $('roleLink').href = location.pathname;
   document.title = 'ตรวจใบลา — อาจารย์';
   $('tab-teacher').classList.add('active');
   try { T.pin = sessionStorage.getItem('lv_pin') || ''; } catch (e) {}
